@@ -1,0 +1,9 @@
+# Default ignored files
+/.idea/
+/__pycache__/
+imgui.ini
+/training_log/
+*.pyc
+misc
+tactile_sim.egg-info
+/scripts/wandb/

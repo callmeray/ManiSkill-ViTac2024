@@ -1,0 +1,31 @@
+env:
+  env_name: ContinuousInsertionRandomizedMarkerEnv-v1
+  final_reward: 10
+  marker_interval_range: [1.95, 2.05]
+  marker_lose_tracking_probability: 0.01
+  marker_pos_shift_range: [0.1, 0.1]
+  marker_random_noise: 0.5
+  marker_rotation_range: 0.1
+  marker_translation_range: [1, 1]
+  max_action: [2.0, 2.0, 4.0]
+  max_steps: 8
+  normalize: false
+  params:
+    gripper_x_offset: [-1, 1]
+    gripper_z_offset: [-10, -6]
+    hole_friction: [0.0, 1.0]
+    indentation_depth: [0.5, 1.25]
+    peg_friction: [0.2, 1.0]
+    sim_time_step: 0.033
+    tac_elastic_modulus_l: [300000.0, 1000000.0]
+    tac_elastic_modulus_r: [300000.0, 1000000.0]
+    tac_friction: [0.5, 2.0]
+    tac_poisson_ratio_l: [0.3, 0.47]
+    tac_poisson_ratio_r: [0.3, 0.47]
+    tac_sensor_meta_file: gelsight_mini_e430/meta_file
+  peg_hole_path_file: configs/peg_in_hole/3shape_1.5mm.txt
+  peg_theta_max_offset: 10.0
+  peg_x_max_offset: 5.0
+  peg_y_max_offset: 5.0
+  step_penalty: 1
+  z_step_size: 0.125
