@@ -31,7 +31,7 @@ Run
 
 ```bash
 conda env create -f environment.yaml
-conda activate warp_ipc
+conda activate mani_vitac
 ```
 
 Install [sapienIPC](https://github.com/Rabbit-Hu/warp_IPC), following the [README](https://github.com/Rabbit-Hu/warp_IPC/blob/main/README.md) file in that repo.

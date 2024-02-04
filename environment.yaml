@@ -1,4 +1,4 @@
-name: warp_ipc
+name: mani_vitac
 channels:
   - pytorch
   - nvidia
