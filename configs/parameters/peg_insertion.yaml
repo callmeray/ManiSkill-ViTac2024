@@ -24,7 +24,7 @@ env:
     sim_kappa_affine: 1e5
     sim_kappa_con: 1e10
     sim_eps_d: 0
-    sim_eps_v: 1e-3
+    sim_eps_v: 1e-2
     sim_solver_newton_max_iters: 5
     sim_solver_cg_max_iters: 50
     sim_solver_cg_error_tolerance: 0

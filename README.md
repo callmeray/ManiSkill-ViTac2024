@@ -14,10 +14,9 @@
 
 **Requirements:**
 
-- Python 3.7.x-3.11.x
-- Microsoft Visual Studio 2019 upwards (Windows)
+- Python 3.8.x-3.11.x
 - GCC 7.2 upwards (Linux)
-- CUDA Toolkit 11.5 or higher
+- CUDA Toolkit 11.8 or higher
 - Git LFS installed (https://git-lfs.github.com/)
 
 
@@ -34,7 +33,7 @@ conda env create -f environment.yaml
 conda activate mani_vitac
 ```
 
-Then use the following commands to install [sapienIPC](https://github.com/Rabbit-Hu/sapienipc-exp), following the [README](https://github.com/Rabbit-Hu/sapienipc-exp/blob/main/README.md) file in that repo.
+Then use the following commands to install [SapienIPC](https://github.com/Rabbit-Hu/sapienipc-exp), following the [README](https://github.com/Rabbit-Hu/sapienipc-exp/blob/main/README.md) file in that repo.
 
 ## Training Example
 
