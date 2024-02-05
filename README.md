@@ -34,7 +34,7 @@ conda env create -f environment.yaml
 conda activate mani_vitac
 ```
 
-Install [sapienIPC](https://github.com/Rabbit-Hu/warp_IPC), following the [README](https://github.com/Rabbit-Hu/warp_IPC/blob/main/README.md) file in that repo.
+Then use the following commands to install [sapienIPC](https://github.com/Rabbit-Hu/sapienipc-exp), following the [README](https://github.com/Rabbit-Hu/sapienipc-exp/blob/main/README.md) file in that repo.
 
 ## Training Example
 
