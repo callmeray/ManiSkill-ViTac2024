@@ -1,7 +1,7 @@
-peg_in_hole/concave1_peg.STL, peg_in_hole/concave1_hole_1.5mm.STL
-peg_in_hole/concave2_peg.STL, peg_in_hole/concave2_hole_1.5mm.STL
-peg_in_hole/convex_peg.STL, peg_in_hole/convex_hole_1.5mm.STL
-peg_in_hole/cuboid_peg.STL, peg_in_hole/cuboid_hole_1.5mm.STL
-peg_in_hole/hexagon_peg.STL, peg_in_hole/hexagon_hole_1.5mm.STL
-peg_in_hole/octagon_peg.STL, peg_in_hole/octagon_hole_1.5mm.STL
-peg_in_hole/trapezoid_peg.STL, peg_in_hole/trapezoid_hole_1.5mm.STL
+peg_in_hole/concave1_peg_tet.msh, peg_in_hole/concave1_hole_1.5mm_tet.msh
+peg_in_hole/concave2_peg_tet.msh, peg_in_hole/concave2_hole_1.5mm_tet.msh
+peg_in_hole/convex_peg_tet.msh, peg_in_hole/convex_hole_1.5mm_tet.msh
+peg_in_hole/cuboid_peg_tet.msh, peg_in_hole/cuboid_hole_1.5mm_tet.msh
+peg_in_hole/hexagon_peg_tet.msh, peg_in_hole/hexagon_hole_1.5mm_tet.msh
+peg_in_hole/octagon_peg_tet.msh, peg_in_hole/octagon_hole_1.5mm_tet.msh
+peg_in_hole/trapezoid_peg_tet.msh, peg_in_hole/trapezoid_hole_1.5mm_tet.msh

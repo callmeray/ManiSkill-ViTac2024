@@ -78,7 +78,6 @@ class ContinuousInsertionSimEnv(gym.Env):
             obs_check_threshold: float = 1e-3,
             params=None,
             params_upper_bound=None,
-            device: str = "cuda:0",
             **kwargs,
     ):
 
@@ -152,7 +151,7 @@ class ContinuousInsertionSimEnv(gym.Env):
         ipc_system_config.gravity = wp.vec3(0, 0, 0)
         ipc_system_config.d_hat = self.params.sim_d_hat  # 2e-4
         ipc_system_config.eps_d = self.params.sim_eps_d  # 1e-3
-        ipc_system_config.eps_v = self.params.sim_eps_v  # 1e-3
+        ipc_system_config.eps_v = self.params.sim_eps_v  # 1e-2
         ipc_system_config.v_max = 1e-1
         ipc_system_config.kappa = self.params.sim_kappa  # 1e3
         ipc_system_config.kappa_affine = self.params.sim_kappa_affine
@@ -175,11 +174,7 @@ class ContinuousInsertionSimEnv(gym.Env):
         ipc_system_config.cg_error_frequency = int(self.params.sim_solver_cg_error_frequency)
 
         ipc_system_config.device = wp_device
-        # print("wp_device:", wp_device, type(wp_device))
-        # device = "cuda:1"
-        # device = wp.get_device(device)
-        # print("wp_device:", device)
-        # ipc_system_config.device = wp.get_device(device)
+
         self.ipc_system = IPCSystem(ipc_system_config)
         self.scene.add_system(self.ipc_system)
 
@@ -226,36 +221,57 @@ class ContinuousInsertionSimEnv(gym.Env):
             self.peg_entity, peg_abd, self.peg_render = build_sapien_entity_ABD(peg_path, "cuda:0", density=500.0,
                                                                                 color=[1.0, 0.0, 0.0, 0.9],
                                                                                 friction=self.params.peg_friction)  # red
+        self.peg_ext = os.path.splitext(peg_path)[-1]
         self.peg_abd = peg_abd
         self.peg_entity.set_name("peg")
-        self.peg_entity.set_pose(sapien.Pose(p=[0, 0, 0], q=[0.7071068, 0, -0.7071068, 0]))
-        peg_width = np.max(peg_abd.tri_mesh.vertices[:, 1]) - np.min(peg_abd.tri_mesh.vertices[:, 1])
-        peg_height = np.max(peg_abd.tri_mesh.vertices[:, 2]) - np.min(peg_abd.tri_mesh.vertices[:, 2])
-        self.peg_bottom_pts_id = \
-            np.where(peg_abd.tri_mesh.vertices[:, 2] < np.min(peg_abd.tri_mesh.vertices[:, 2]) + 1e-4)[0]
+        # 计算了轴的宽度和高度，并获取底部表面上的点的ID
+        if self.peg_ext == ".msh":
+            peg_width = np.max(peg_abd.tet_mesh.vertices[:, 1]) - np.min(peg_abd.tet_mesh.vertices[:, 1])
+            peg_height = np.max(peg_abd.tet_mesh.vertices[:, 2]) - np.min(peg_abd.tet_mesh.vertices[:, 2])
+            self.peg_bottom_pts_id = \
+                np.where(peg_abd.tet_mesh.vertices[:, 2] < np.min(peg_abd.tet_mesh.vertices[:, 2]) + 1e-4)[0]
+        else:
+            peg_width = np.max(peg_abd.tri_mesh.vertices[:, 1]) - np.min(peg_abd.tri_mesh.vertices[:, 1])
+            peg_height = np.max(peg_abd.tri_mesh.vertices[:, 2]) - np.min(peg_abd.tri_mesh.vertices[:, 2])
+            self.peg_bottom_pts_id = \
+                np.where(peg_abd.tri_mesh.vertices[:, 2] < np.min(peg_abd.tri_mesh.vertices[:, 2]) + 1e-4)[0]
 
         # add hole
         with suppress_stdout_stderr():
             self.hole_entity, hole_abd, hole_render = build_sapien_entity_ABD(hole_path, "cuda:0", density=500.0,
                                                                               color=[0.0, 0.0, 1.0, 0.6],
                                                                               friction=self.params.hole_friction)  # blue
+        self.hole_ext = os.path.splitext(peg_path)[-1]
+
         self.hole_entity.set_name("hole")
-        # self.hole_entity.set_pose(sapien.Pose(p=[0, 0 ,0], q=[0.7071068, 0, -0.7071068, 0]))
         self.hold_abd = hole_abd
         self.scene.add_entity(self.hole_entity)
-        self.hole_upper_z = hole_height = np.max(hole_abd.tri_mesh.vertices[:, 2]) - np.min(
-            hole_abd.tri_mesh.vertices[:, 2])
+        if self.hole_ext == ".msh":
+            self.hole_upper_z = hole_height = np.max(hole_abd.tet_mesh.vertices[:, 2]) - np.min(
+                hole_abd.tet_mesh.vertices[:, 2])
+        else:
+            self.hole_upper_z = hole_height = np.max(hole_abd.tri_mesh.vertices[:, 2]) - np.min(
+                hole_abd.tri_mesh.vertices[:, 2])
 
         # generate random and valid offset
         if offset is None:
             peg = fcl.BVHModel()
-            peg.beginModel(peg_abd.tri_mesh.vertices.shape[0], peg_abd.tri_mesh.surface_triangles.shape[0])
-            peg.addSubModel(peg_abd.tri_mesh.vertices, peg_abd.tri_mesh.surface_triangles)
+            if self.peg_ext == ".msh":
+                peg.beginModel(peg_abd.tet_mesh.vertices.shape[0], peg_abd.tet_mesh.surface_triangles.shape[0])
+                peg.addSubModel(peg_abd.tet_mesh.vertices, peg_abd.tet_mesh.surface_triangles)
+            else:
+                peg.beginModel(peg_abd.tri_mesh.vertices.shape[0], peg_abd.tri_mesh.surface_triangles.shape[0])
+                peg.addSubModel(peg_abd.tri_mesh.vertices, peg_abd.tri_mesh.surface_triangles)
+
             peg.endModel()
 
             hole = fcl.BVHModel()
-            hole.beginModel(hole_abd.tri_mesh.vertices.shape[0], hole_abd.tri_mesh.surface_triangles.shape[0])
-            hole.addSubModel(hole_abd.tri_mesh.vertices, hole_abd.tri_mesh.surface_triangles)
+            if self.hole_ext == ".msh":
+                hole.beginModel(hole_abd.tet_mesh.vertices.shape[0], hole_abd.tet_mesh.surface_triangles.shape[0])
+                hole.addSubModel(hole_abd.tet_mesh.vertices, hole_abd.tet_mesh.surface_triangles)
+            else:
+                hole.beginModel(hole_abd.tri_mesh.vertices.shape[0], hole_abd.tri_mesh.surface_triangles.shape[0])
+                hole.addSubModel(hole_abd.tri_mesh.vertices, hole_abd.tri_mesh.surface_triangles)
             hole.endModel()
 
             t1 = fcl.Transform()
@@ -862,7 +878,7 @@ if __name__ == "__main__":
         marker_pos_shift_range=(0., 0.),
         marker_random_noise=0.1,
         normalize=False,
-        peg_hole_path_file="configs/peg_insertion/3shape_1.5mm.txt",
+        peg_hole_path_file="configs/peg_insertion/3shape_2.0mm_tet_msh.txt",
     )
 
     np.set_printoptions(precision=4)
