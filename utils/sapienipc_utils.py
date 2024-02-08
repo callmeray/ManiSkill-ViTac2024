@@ -4,17 +4,17 @@ import os
 
 import sapien
 import torch
+import numpy as np
 from sapienipc.ipc_component import IPCABDComponent
 from sapienipc.ipc_utils.ipc_mesh import IPCTetMesh, IPCTriMesh
 
 
 def build_sapien_entity_ABD_Tri(msh_path: str,
-                            torch_device: str,
-                            density: float = 1000.0,
-                            friction: float = 0.5,
-                            color: List[float] = [0.7, 0.7, 0.7, 1.0]) -> Tuple[
+                                torch_device: str,
+                                density: float = 1000.0,
+                                friction: float = 0.5,
+                                color: List[float] = [0.7, 0.7, 0.7, 1.0]) -> Tuple[
     sapien.Entity, IPCABDComponent, sapien.render.RenderCudaMeshComponent]:
-
     abd_component = IPCABDComponent()
     abd_component.set_tri_mesh(IPCTriMesh(filename=msh_path, scale=0.001))
     abd_component.set_density(density)
@@ -42,12 +42,11 @@ def build_sapien_entity_ABD_Tri(msh_path: str,
 
 
 def build_sapien_entity_ABD_Tet(msh_path: str,
-                            torch_device: str,
-                            density: float = 1000.0,
-                            friction: float = 0.5,
-                            color: List[float] = [0.7, 0.7, 0.7, 1.0]) -> Tuple[
+                                torch_device: str,
+                                density: float = 1000.0,
+                                friction: float = 0.5,
+                                color: List[float] = [0.7, 0.7, 0.7, 1.0]) -> Tuple[
     sapien.Entity, IPCABDComponent, sapien.render.RenderCudaMeshComponent]:
-
     abd_component = IPCABDComponent()
     abd_component.set_tet_mesh(IPCTetMesh(filename=msh_path))
     abd_component.set_density(density)
@@ -80,7 +79,6 @@ def build_sapien_entity_ABD(msh_path: str,
                             friction: float = 0.5,
                             color: List[float] = [0.7, 0.7, 0.7, 1.0]) -> Tuple[
     sapien.Entity, IPCABDComponent, sapien.render.RenderCudaMeshComponent]:
-
     ext = os.path.splitext(msh_path)[-1]
     if ext == ".msh":
         return build_sapien_entity_ABD_Tet(msh_path, torch_device, density, friction, color)
@@ -88,3 +86,14 @@ def build_sapien_entity_ABD(msh_path: str,
         return build_sapien_entity_ABD_Tri(msh_path, torch_device, density, friction, color)
     else:
         raise TypeError(f"Unsupported file extension {ext}: {msh_path}")
+
+
+def cv2ex2pose(ex):
+    cv2sapien = np.array([[0., 0., 1., 0.],
+                          [-1., 0., 0., 0.],
+                          [0., -1., 0., 0.],
+                          [0., 0., 0., 1.]], dtype=np.float32)
+
+    pose = ex @ np.linalg.inv(cv2sapien)
+
+    return sapien.Pose(pose)

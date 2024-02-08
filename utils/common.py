@@ -5,6 +5,42 @@ import time
 from datetime import datetime
 
 import numpy as np
+import cv2
+
+
+def generate_patch_array(super_resolution_ratio=10):
+    circle_radius = 3
+    size_slot_num = 50
+    base_circle_radius = 1.5
+
+    patch_array = np.zeros(
+        (super_resolution_ratio, super_resolution_ratio, size_slot_num, 4 * circle_radius, 4 * circle_radius),
+        dtype=np.uint8)
+    for u in range(super_resolution_ratio):
+        for v in range(super_resolution_ratio):
+            for w in range(size_slot_num):
+                img_highres = np.ones(
+                    (4 * circle_radius * super_resolution_ratio, 4 * circle_radius * super_resolution_ratio),
+                    dtype=np.uint8) * 255
+                center = np.array(
+                    [circle_radius * super_resolution_ratio * 2, circle_radius * super_resolution_ratio * 2],
+                    dtype=np.uint8)
+                center_offseted = center + np.array([u, v])
+                radius = round(base_circle_radius * super_resolution_ratio + w)
+                img_highres = cv2.circle(img_highres, tuple(center_offseted), radius, (0, 0, 0), thickness=cv2.FILLED,
+                                         lineType=cv2.LINE_AA)
+                img_highres = cv2.GaussianBlur(img_highres, (17, 17), 15)
+                img_lowres = cv2.resize(img_highres, (4 * circle_radius, 4 * circle_radius),
+                                        interpolation=cv2.INTER_CUBIC)
+                patch_array[u, v, w, ...] = img_lowres
+
+    return {
+        "base_circle_radius": base_circle_radius,
+        "circle_radius": circle_radius,
+        "size_slot_num": size_slot_num,
+        "patch_array": patch_array,
+        "super_resolution_ratio": super_resolution_ratio,
+    }
 
 
 class suppress_stdout_stderr(object):

@@ -27,7 +27,7 @@ EVAL_CFG_FILE = os.path.join(repo_path, "configs/evaluation/open_lock_evaluation
 REPEAT_NUM = 5
 
 
-def evaluate_policy(model, key):
+def evaluate_policy(model, key, render_rgb):
     exp_start_time = get_time()
     exp_name = f"open_lock_{exp_start_time}"
     log_dir = Path(os.path.join(repo_path, f"eval_log/{exp_name}"))
@@ -62,12 +62,13 @@ def evaluate_policy(model, key):
             "params_upper_bound": average_params,
         }
     )
+    specified_env_args["render_rgb"] = render_rgb
 
     # create evaluation environment
     env = LongOpenLockRandPointFlowEnv(**specified_env_args)
     set_random_seed(0)
 
-    offset_list = [[i * 1.0/3, 0, 0] for i in range(30)]
+    offset_list = [[i * 1.0 / 3, 0, 0] for i in range(30)]
     offset_list = offset_list * REPEAT_NUM
     test_num = len(offset_list)
     test_result = []
@@ -105,13 +106,23 @@ def evaluate_policy(model, key):
 
 
 if __name__ == "__main__":
-    # replace the key with the string sent to you
-    key = "PLACE_HOLDER"
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--key", type=str, required=True, help="use the key sent to you")
+    parser.add_argument("--render_rgb", type=bool, required=True,
+                        help="whether to simulate rgb images of tactile sensors")
+    args = parser.parse_args()
+    key = args.key
     # replace the model with your own policy
     import torch.nn as nn
+
+
     class ZeroAction(nn.Module):
         def forward(self, obs):
             return torch.zeros(3, dtype=torch.float32)
+
+
     model = ZeroAction()
 
-    evaluate_policy(model, key)
+    evaluate_policy(model, key, args.render_rgb)

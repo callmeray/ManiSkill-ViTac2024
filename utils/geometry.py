@@ -103,7 +103,6 @@ def in_hull(p, hull):
 
 
 def vertical_ray_intersects_segment(ray_point, segment_start, segment_end):
-
     if segment_start[0] == segment_end[0]:
         return False
     segment_slope = (segment_end[1] - segment_start[1]) / (segment_end[0] - segment_start[0])
@@ -133,6 +132,8 @@ def point_in_polygon(point, polygon_points):
         return False
     else:
         return True
+
+
 def generate_rectangle(center, size, theta, rotation_first=False):
     center_x, center_y = center
     x, y = size

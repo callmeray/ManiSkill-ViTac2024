@@ -4,6 +4,7 @@ import math
 import os
 import sys
 
+import cv2
 from sapienipc.ipc_utils.user_utils import ipc_update_render_all
 
 script_path = os.path.dirname(os.path.realpath(__file__))
@@ -41,7 +42,7 @@ GUI = False
 
 
 def evaluate_error(offset):
-    offset_squared = offset**2
+    offset_squared = offset ** 2
     error = math.sqrt(offset_squared[0] + offset_squared[1] + offset_squared[2])
     return error
 
@@ -359,7 +360,6 @@ class ContinuousInsertionSimEnv(gym.Env):
             1,
         )
         grasp_speed = (0.1 + self.params.indentation_depth) / 1000 / grasp_step / self.params.sim_time_step
-
 
         for grasp_step_counter in range(grasp_step):
             self.tactile_sensor_1.set_active_v(
@@ -720,6 +720,7 @@ class ContinuousInsertionSimEnv(gym.Env):
 class ContinuousInsertionSimGymRandomizedPointFLowEnv(ContinuousInsertionSimEnv):
     def __init__(
             self,
+            render_rgb: bool = False,
             marker_interval_range: Tuple[float, float] = (2., 2.),
             marker_rotation_range: float = 0.,
             marker_translation_range: Tuple[float, float] = (0., 0.),
@@ -730,6 +731,7 @@ class ContinuousInsertionSimGymRandomizedPointFLowEnv(ContinuousInsertionSimEnv)
             **kwargs,
     ):
         """
+        param: render_rgb: whether to render RGB images.
         param: marker_interval_range, in mm.
         param: marker_rotation_range: overall marker rotation, in radian.
         param: marker_translation_range: overall marker translation, in mm. first two elements: x-axis; last two elements: y-xis.
@@ -737,6 +739,7 @@ class ContinuousInsertionSimGymRandomizedPointFLowEnv(ContinuousInsertionSimEnv)
         param: marker_random_noise: std of Gaussian marker noise, in pixel. caused by CMOS noise and image processing.
         param: loss_tracking_probability: the probability of losing tracking, appled to each marker
         """
+        self.render_rgb = render_rgb
         self.sensor_meta_file = kwargs.get("params").tac_sensor_meta_file
         self.marker_interval_range = marker_interval_range
         self.marker_rotation_range = marker_rotation_range
@@ -763,7 +766,6 @@ class ContinuousInsertionSimGymRandomizedPointFLowEnv(ContinuousInsertionSimEnv)
         ]
 
     def add_tactile_sensors(self, init_pos_l, init_rot_l, init_pos_r, init_rot_r):
-
         self.tactile_sensor_1 = VisionTactileSensorSapienIPC(
             scene=self.scene,
             ipc_system=self.ipc_system,
@@ -814,6 +816,14 @@ class ContinuousInsertionSimGymRandomizedPointFLowEnv(ContinuousInsertionSimEnv)
             ],
             axis=0
         ).astype(np.float32)
+        if self.render_rgb:
+            obs["rgb_images"] = np.stack(
+                [
+                    self.tactile_sensor_1.gen_rgb_image(),
+                    self.tactile_sensor_2.gen_rgb_image(),
+                ],
+                axis=0
+            )
         return obs
 
 
@@ -849,7 +859,7 @@ if __name__ == "__main__":
         line_search_max_iters=10,
         ccd_max_iters=100,
         tac_sensor_meta_file="gelsight_mini_e430/meta_file",
-        tac_elastic_modulus_l=3.0e5 , # note if 3e5 is correctly recognized as float
+        tac_elastic_modulus_l=3.0e5,  # note if 3e5 is correctly recognized as float
         tac_poisson_ratio_l=0.3,
         tac_density_l=1e3,
         tac_elastic_modulus_r=3.0e5,
@@ -858,7 +868,7 @@ if __name__ == "__main__":
         tac_friction=100,
         # task specific parameters
         gripper_x_offset=0,
-        gripper_z_offset=-8,
+        gripper_z_offset=-4,
         indentation_depth=1,
         peg_friction=10,
         hole_friction=1,
@@ -866,6 +876,7 @@ if __name__ == "__main__":
     print(params)
 
     env = ContinuousInsertionSimGymRandomizedPointFLowEnv(
+        render_rgb=True,
         params=params,
         step_penalty=1,
         final_reward=10,
@@ -878,7 +889,7 @@ if __name__ == "__main__":
         marker_pos_shift_range=(0., 0.),
         marker_random_noise=0.1,
         normalize=False,
-        peg_hole_path_file="configs/peg_insertion/3shape_2.0mm_tet_msh.txt",
+        peg_hole_path_file="configs/peg_insertion/3shape_1.5mm.txt",
     )
 
     np.set_printoptions(precision=4)
@@ -917,6 +928,12 @@ if __name__ == "__main__":
         o, _ = env.reset(offset)
         for k, v in o.items():
             print(k, v.shape)
+
+        # save image
+        right_rgb = o["rgb_images"][1]
+        cv2.imwrite("saved_images/right_rgb_0.png", right_rgb)
+        left_rgb = o["rgb_images"][0]
+        cv2.imwrite("saved_images/left_rgb_0.png", left_rgb)
         info = env.get_info()
         print("timestep: ", timestep)
         print(
@@ -926,6 +943,10 @@ if __name__ == "__main__":
         for i in range(10):
             action = [0, 0, 0]
             o, r, d, _, info = env.step(action)
+            right_rgb = o["rgb_images"][1]
+            cv2.imwrite(f"saved_images/right_rgb_{i + 1}.png", right_rgb)
+            left_rgb = o["rgb_images"][0]
+            cv2.imwrite(f"saved_images/left_rgb_{i + 1}.png", left_rgb)
             print(
                 f"step: {info['steps']} reward: {r:.2f} gt_offset: {o['gt_offset']} success: {info['is_success']}"
                 f" peg_z: {info['peg_relative_z']}, obs check: {info['observation_check']}")

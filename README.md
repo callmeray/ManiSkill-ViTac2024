@@ -3,12 +3,18 @@
 
 **Table of Contents**
 
+- [Update News](#update)
 - [Installation](#installation)
 - [Training Example](#example)
 - [Submission](#submission)
 - [Leaderboard](#leaderboard)
+- [Real Robot Evaluation](#real-robot-evaluation)
 - [Contact](#contact)
 - [Citation](#citation)
+
+## Update
+**2024/02/08** Add `render_rgb` option for tactile sensor observations
+
 
 ## Installation
 
@@ -60,6 +66,9 @@ Submit the evaluation logs by emailing them to [maniskill.vitac@gmail.com](manis
 ## Leaderboard
 
 The leaderboard for this challenge is available at [Google Drive](https://docs.google.com/spreadsheets/d/1ZCNSbctm5eyr4Q59KmVBE0ZMo5mt63emFLihbJn1maw/).
+
+## Real Robot Evaluation
+Real robot evaluation code demo is contained in `real_env_demo/`. The GelsightMini sensor code is maintained at [GitHub/gelsight_mini_ros](https://github.com/RVSATHU/gelsight_mini_ros/).
 
 ## Contact
 

@@ -16,14 +16,19 @@ import sapien
 import torch
 import transforms3d as t3d
 from path import Path
+from scipy.ndimage import gaussian_filter
+from envs.phong_shading import PhongShadingRenderer
 from sapienipc.ipc_component import (IPCABDComponent, IPCFEMComponent,
                                      IPCPlaneComponent)
 from sapienipc.ipc_system import IPCSystem, IPCSystemConfig
 from sapienipc.ipc_utils.ipc_mesh import IPCTetMesh, IPCTriMesh
+from sapienipc.ipc_utils.user_utils import ipc_update_render_all
 from sklearn.neighbors import NearestNeighbors
 
 from utils.geometry import (estimate_rigid_transform, in_hull, quat_product,
                             transform_mesh, transform_pts)
+from utils.sapienipc_utils import cv2ex2pose
+from utils.common import generate_patch_array
 
 
 class TactileSensorSapienIPC:
@@ -48,6 +53,7 @@ class TactileSensorSapienIPC:
         self.init_rot = init_rot
         self.current_pos = init_pos
         self.current_rot = init_rot
+        self.name = name
 
         meta_file = Path(repo_path) / "assets" / meta_file
         with open(meta_file, 'r') as f:
@@ -82,7 +88,8 @@ class TactileSensorSapienIPC:
 
         # create sapien entity
         self.entity = sapien.Entity()
-        self.entity.add_component(self.render_component)
+        # TODO: set visibility
+        # self.entity.add_component(self.render_component)
         self.entity.add_component(self.fem_component)
         self.entity.set_pose(sapien.Pose(p=init_pos, q=init_rot))
         self.entity.set_name(name)
@@ -233,6 +240,16 @@ class VisionTactileSensorSapienIPC(TactileSensorSapienIPC):
         self.init_surface_vertices_camera = self.get_surface_vertices_camera()
         self.reference_surface_vertices_camera = self.get_surface_vertices_camera()
 
+        self.cam_entity = sapien.Entity()
+        self.cam = cam = sapien.render.RenderCameraComponent(320, 240)
+        cam.set_perspective_parameters(0.0001, 0.1, camera_params[0], camera_params[1], camera_params[2],
+                                       camera_params[3], 0)
+        self.cam_entity.add_component(cam)
+        self.cam_entity.name = self.name + "_camera"
+        self.scene.add_entity(self.cam_entity)
+        self.phong_shading_renderer = PhongShadingRenderer()
+        self.patch_array_dict = generate_patch_array()
+
     def transform_to_camera_frame(self, input_vertices):
         current_pose_transform = np.eye(4)
         current_pose_transform[:3, :3] = t3d.quaternions.quat2mat(self.current_rot)
@@ -244,6 +261,12 @@ class VisionTactileSensorSapienIPC(TactileSensorSapienIPC):
         v = self.get_vertices_world()
         v_cv = self.transform_to_camera_frame(v)
         return v_cv
+
+    def get_camera_pose(self):
+        current_pose_transform = np.eye(4)
+        current_pose_transform[:3, :3] = t3d.quaternions.quat2mat(self.current_rot)
+        current_pose_transform[:3, 3] = self.current_pos
+        return np.linalg.inv(self.gel2camera @ np.linalg.inv(current_pose_transform))
 
     def get_surface_vertices_camera(self):
         v = self.get_surface_vertices_world()
@@ -397,3 +420,58 @@ class VisionTactileSensorSapienIPC(TactileSensorSapienIPC):
             ret /= 160.0
             ret -= 1.0
         return ret
+
+    def gen_rgb_image(self):
+        # generate RGB image from depth
+        depth = self._gen_depth()
+        rgb = self.phong_shading_renderer.generate(depth)
+        rgb = rgb.astype(np.float64)
+
+        # generate markers
+        marker_grid = self._gen_marker_grid()
+        marker_pts_surface_idx, marker_pts_surface_weight = self._gen_marker_weight(marker_grid)
+        curr_marker_pts = (self.get_surface_vertices_camera()[marker_pts_surface_idx] * marker_pts_surface_weight[
+            ..., None]).sum(1)
+        curr_marker_uv = self.gen_marker_uv(curr_marker_pts)
+
+        curr_marker = self.draw_marker(curr_marker_uv)
+        rgb = rgb.astype(np.float64)
+        rgb *= np.dstack([curr_marker.astype(np.float64) / 255] * 3)
+        rgb = rgb.astype(np.uint8)
+        return rgb
+
+    def _gen_depth(self):
+        # hide the gel to get the depth of the object in contact
+        self.render_component.disable()
+        self.cam_entity.set_pose(cv2ex2pose((self.get_camera_pose())))
+        self.scene.update_render()
+        ipc_update_render_all(self.scene)
+        self.cam.take_picture()
+        position = self.cam.get_picture('Position')  # [H, W, 4]
+        depth = -position[..., 2]  # float in meter
+        fem_smooth_sigma = 2
+        depth = gaussian_filter(depth, fem_smooth_sigma)
+        self.render_component.enable()
+
+        return depth
+
+    def draw_marker(self, marker_uv, marker_size=3, img_w=320, img_h=240):
+        marker_uv_compensated = marker_uv + np.array([0.5, 0.5])
+
+        marker_image = np.ones((img_h + 24, img_w + 24), dtype=np.uint8) * 255
+        for i in range(marker_uv_compensated.shape[0]):
+            uv = marker_uv_compensated[i]
+            u = uv[0] + 12
+            v = uv[1] + 12
+            patch_id_u = math.floor((u - math.floor(u)) * self.patch_array_dict["super_resolution_ratio"])
+            patch_id_v = math.floor((v - math.floor(v)) * self.patch_array_dict["super_resolution_ratio"])
+            patch_id_w = math.floor((marker_size - self.patch_array_dict["base_circle_radius"]) * self.patch_array_dict[
+                "super_resolution_ratio"])
+            current_patch = self.patch_array_dict["patch_array"][patch_id_u, patch_id_v, patch_id_w]
+            patch_coord_u = math.floor(u) - 6
+            patch_coord_v = math.floor(v) - 6
+            if marker_image.shape[1] - 12 > patch_coord_u >= 0 and marker_image.shape[0] - 12 > patch_coord_v >= 0:
+                marker_image[patch_coord_v:patch_coord_v + 12, patch_coord_u:patch_coord_u + 12] = current_patch
+        marker_image = marker_image[12:-12, 12:-12]
+
+        return marker_image

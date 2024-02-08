@@ -635,6 +635,7 @@ class LongOpenLockSimEnv(gym.Env):
 class LongOpenLockRandPointFlowEnv(LongOpenLockSimEnv):
     def __init__(
             self,
+            render_rgb: bool = False,
             marker_interval_range: Tuple[float, float] = (2., 2.),
             marker_rotation_range: float = 0.,
             marker_translation_range: Tuple[float, float] = (0., 0.),
@@ -645,6 +646,7 @@ class LongOpenLockRandPointFlowEnv(LongOpenLockSimEnv):
             **kwargs,
     ):
         """
+        param: render_rgb: whether to render RGB images.
         param: marker_interval_range, in mm.
         param: marker_rotation_range: overall marker rotation, in radian.
         param: marker_translation_range: overall marker translation, in mm. first two elements: x-axis; last two elements: y-xis.
@@ -652,6 +654,7 @@ class LongOpenLockRandPointFlowEnv(LongOpenLockSimEnv):
         param: marker_random_noise: std of Gaussian marker noise, in pixel. caused by CMOS noise and image processing.
         param: loss_tracking_probability: the probability of losing tracking, appled to each marker
         """
+        self.render_rgb = render_rgb
         self.sensor_meta_file = kwargs.get("params").tac_sensor_meta_file
         self.marker_interval_range = marker_interval_range
         self.marker_rotation_range = marker_rotation_range
@@ -730,6 +733,15 @@ class LongOpenLockRandPointFlowEnv(LongOpenLockSimEnv):
                                dtype=np.float32) * 200.0
         obs["key2"] = np.array([key2_pts.mean(0)[0] - info["lock2_pts"].mean(0)[0], key2_pts.mean(0)[1], key2_pts.mean(0)[2] - 0.03],
                                dtype=np.float32) * 200.0
+
+        if self.render_rgb:
+            obs["rgb_images"] = np.stack(
+                [
+                    self.tactile_sensor_1.gen_rgb_image(),
+                    self.tactile_sensor_2.gen_rgb_image(),
+                ],
+                axis=0
+            )
         return obs
 
 

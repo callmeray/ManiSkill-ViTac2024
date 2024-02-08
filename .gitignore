@@ -7,3 +7,4 @@ imgui.ini
 misc
 tactile_sim.egg-info
 /scripts/wandb/
+/envs/saved_images/
