@@ -34,9 +34,12 @@ TD3.policy_aliases["TD3PolicyForLongOpenLockPointFlowEnv"] = TD3PolicyForLongOpe
 
 
 
-def make_env(env_name, seed=0, **env_args):
+def make_env(env_name, seed=0, i=0, **env_args):
+    num_devices = torch.cuda.device_count()
+    assert num_devices > 0
+    wp_device = f"cuda:{i % num_devices}"
     def _init():
-        env = gym.make(env_name, **env_args)
+        env = gym.make(env_name, device=wp_device, **env_args)
 
         return env
 
@@ -93,6 +96,7 @@ if __name__ == "__main__":
             make_env(
                 env_name,
                 seed,
+                i,
                 **specified_env_args,
             )
             for i in range(parallel_num)

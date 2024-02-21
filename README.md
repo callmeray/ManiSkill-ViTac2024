@@ -15,6 +15,8 @@
 ## Update
 **2024/02/08** Add `render_rgb` option for tactile sensor observations
 
+**2024/02/21** Add multi-gpu to the environment. Now the training script will automatically select multiple gpus when `parallel` in the configuration file is larger than 1.
+
 
 ## Installation
 

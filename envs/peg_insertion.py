@@ -79,6 +79,7 @@ class ContinuousInsertionSimEnv(gym.Env):
             obs_check_threshold: float = 1e-3,
             params=None,
             params_upper_bound=None,
+            device: str = "cuda:0",
             **kwargs,
     ):
 
@@ -174,7 +175,9 @@ class ContinuousInsertionSimEnv(gym.Env):
         ipc_system_config.cg_error_tolerance = self.params.sim_solver_cg_error_tolerance
         ipc_system_config.cg_error_frequency = int(self.params.sim_solver_cg_error_frequency)
 
-        ipc_system_config.device = wp_device
+        # set device
+        device = wp.get_device(device)
+        ipc_system_config.device = wp.get_device(device)
 
         self.ipc_system = IPCSystem(ipc_system_config)
         self.scene.add_system(self.ipc_system)

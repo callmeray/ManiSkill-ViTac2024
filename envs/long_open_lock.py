@@ -67,6 +67,7 @@ class LongOpenLockSimEnv(gym.Env):
             senosr_offset_z_range_len: float = 0.0,
             params=None,
             params_upper_bound=None,
+            device: str = "cuda:0",
             **kwargs
     ):
         super(LongOpenLockSimEnv, self).__init__()
@@ -154,12 +155,10 @@ class LongOpenLockSimEnv(gym.Env):
         ipc_system_config.cg_error_tolerance = self.params.sim_solver_cg_error_tolerance
         ipc_system_config.cg_error_frequency = int(self.params.sim_solver_cg_error_frequency)
 
-        ipc_system_config.device = wp_device
-        # print("wp_device:", wp_device, type(wp_device))
-        # device = "cuda:1"
-        # device = wp.get_device(device)
-        # print("wp_device:", device)
-        # ipc_system_config.device = wp.get_device(device)
+        # set device
+        device = wp.get_device(device)
+        ipc_system_config.device = wp.get_device(device)
+
         self.ipc_system = IPCSystem(ipc_system_config)
         self.scene.add_system(self.ipc_system)
 
