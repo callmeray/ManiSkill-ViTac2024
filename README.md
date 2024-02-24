@@ -13,9 +13,13 @@
 - [Citation](#citation)
 
 ## Update
-**2024/02/08** Add `render_rgb` option for tactile sensor observations
+
+**2024/02/24** Add `--no_render` option for training without renderer. This is useful for training on a server without a display.
 
 **2024/02/21** Add multi-gpu to the environment. Now the training script will automatically select multiple gpus when `parallel` in the configuration file is larger than 1.
+
+**2024/02/08** Add `render_rgb` option for tactile sensor observations
+
 
 
 ## Installation
@@ -49,9 +53,9 @@ To train our example policy, run
 
 ```bash
 # example policy for peg insertion
-python scripts/universal_training_script.py --cfg configs/parameters/peg_insertion.yaml
+python scripts/universal_training_script.py --cfg configs/parameters/peg_insertion.yaml [--no_render]
 # example policy for open lock
-python scripts/universal_training_script.py --cfg configs/parameters/long_open_lock.yaml
+python scripts/universal_training_script.py --cfg configs/parameters/long_open_lock.yaml [--no_render]
 ```
 
 ## Submission 

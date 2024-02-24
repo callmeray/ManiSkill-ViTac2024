@@ -80,6 +80,7 @@ class ContinuousInsertionSimEnv(gym.Env):
             params=None,
             params_upper_bound=None,
             device: str = "cuda:0",
+            no_render: bool = False,
             **kwargs,
     ):
 
@@ -90,6 +91,7 @@ class ContinuousInsertionSimEnv(gym.Env):
         """
         super(ContinuousInsertionSimEnv, self).__init__()
 
+        self.no_render = no_render
         self.step_penalty = step_penalty
         self.final_reward = final_reward
         assert max_action.shape == (3,)
@@ -132,15 +134,17 @@ class ContinuousInsertionSimEnv(gym.Env):
         # build scene, system
         self.viewer = None
         self.scene = sapien.Scene()
-        self.scene.set_ambient_light([0.5, 0.5, 0.5])
-        self.scene.add_directional_light([0, -1, -1], [0.5, 0.5, 0.5], True)
+        if not no_render:
+            self.scene.set_ambient_light([0.5, 0.5, 0.5])
+            self.scene.add_directional_light([0, -1, -1], [0.5, 0.5, 0.5], True)
 
         # add a camera to indicate shader
-        cam_entity = sapien.Entity()
-        cam = sapien.render.RenderCameraComponent(512, 512)
-        cam_entity.add_component(cam)
-        cam_entity.name = "camera"
-        self.scene.add_entity(cam_entity)
+        if not no_render:
+            cam_entity = sapien.Entity()
+            cam = sapien.render.RenderCameraComponent(512, 512)
+            cam_entity.add_component(cam)
+            cam_entity.name = "camera"
+            self.scene.add_entity(cam_entity)
 
         ######## Create system ########
         ipc_system_config = IPCSystemConfig()
@@ -222,13 +226,14 @@ class ContinuousInsertionSimEnv(gym.Env):
 
         # add peg
         with suppress_stdout_stderr():
-            self.peg_entity, peg_abd, self.peg_render = build_sapien_entity_ABD(peg_path, "cuda:0", density=500.0,
-                                                                                color=[1.0, 0.0, 0.0, 0.9],
-                                                                                friction=self.params.peg_friction)  # red
+            self.peg_entity, peg_abd = build_sapien_entity_ABD(peg_path, "cuda:0", density=500.0,
+                                                               color=[1.0, 0.0, 0.0, 0.9],
+                                                               friction=self.params.peg_friction,
+                                                               no_render=self.no_render)  # red
         self.peg_ext = os.path.splitext(peg_path)[-1]
         self.peg_abd = peg_abd
         self.peg_entity.set_name("peg")
-        # 计算了轴的宽度和高度，并获取底部表面上的点的ID
+
         if self.peg_ext == ".msh":
             peg_width = np.max(peg_abd.tet_mesh.vertices[:, 1]) - np.min(peg_abd.tet_mesh.vertices[:, 1])
             peg_height = np.max(peg_abd.tet_mesh.vertices[:, 2]) - np.min(peg_abd.tet_mesh.vertices[:, 2])
@@ -242,9 +247,10 @@ class ContinuousInsertionSimEnv(gym.Env):
 
         # add hole
         with suppress_stdout_stderr():
-            self.hole_entity, hole_abd, hole_render = build_sapien_entity_ABD(hole_path, "cuda:0", density=500.0,
-                                                                              color=[0.0, 0.0, 1.0, 0.6],
-                                                                              friction=self.params.hole_friction)  # blue
+            self.hole_entity, hole_abd = build_sapien_entity_ABD(hole_path, "cuda:0", density=500.0,
+                                                                 color=[0.0, 0.0, 1.0, 0.6],
+                                                                 friction=self.params.hole_friction,
+                                                                 no_render=self.no_render)  # blue
         self.hole_ext = os.path.splitext(peg_path)[-1]
 
         self.hole_entity.set_name("hole")
@@ -432,6 +438,7 @@ class ContinuousInsertionSimEnv(gym.Env):
             density=self.params.tac_density_l,
             friction=self.params.tac_friction,
             name="tactile_sensor_1",
+            no_render=self.no_render,
         )
 
         self.tactile_sensor_2 = TactileSensorSapienIPC(
@@ -445,6 +452,7 @@ class ContinuousInsertionSimEnv(gym.Env):
             density=self.params.tac_density_r,
             friction=self.params.tac_friction,
             name="tactile_sensor_2",
+            no_render=self.no_render,
         )
 
     def reset(self, offset=None, seed=None):
@@ -759,6 +767,14 @@ class ContinuousInsertionSimGymRandomizedPointFLowEnv(ContinuousInsertionSimEnv)
             "gt_offset": np.zeros((3,), dtype=np.float32),
             "marker_flow": np.zeros((2, 2, self.marker_flow_size, 2), dtype=np.float32),
         }
+        if render_rgb:
+            self.default_observation["rgb_images"] = np.stack(
+                [
+                    np.zeros((320, 240, 3), dtype=np.uint8),
+                    np.zeros((320, 240, 3), dtype=np.uint8),
+                ],
+                axis=0
+            )
 
         self.observation_space = convert_observation_to_space(self.default_observation)
 
@@ -787,6 +803,7 @@ class ContinuousInsertionSimGymRandomizedPointFLowEnv(ContinuousInsertionSimEnv)
             marker_lose_tracking_probability=self.marker_lose_tracking_probability,
             normalize=self.normalize,
             marker_flow_size=self.marker_flow_size,
+            no_render=self.no_render,
         )
 
         self.tactile_sensor_2 = VisionTactileSensorSapienIPC(
@@ -807,6 +824,7 @@ class ContinuousInsertionSimGymRandomizedPointFLowEnv(ContinuousInsertionSimEnv)
             marker_lose_tracking_probability=self.marker_lose_tracking_probability,
             normalize=self.normalize,
             marker_flow_size=self.marker_flow_size,
+            no_render=self.no_render,
         )
 
     def get_obs(self, info=None):

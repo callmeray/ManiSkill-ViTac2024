@@ -23,7 +23,7 @@ env:
     tac_poisson_ratio_l: [0.3, 0.47]
     tac_poisson_ratio_r: [0.3, 0.47]
     tac_sensor_meta_file: gelsight_mini_e430/meta_file
-  peg_hole_path_file: configs/peg_in_hole/3shape_1.5mm.txt
+  peg_hole_path_file: configs/peg_insertion/3shape_1.5mm.txt
   peg_theta_max_offset: 10.0
   peg_x_max_offset: 5.0
   peg_y_max_offset: 5.0

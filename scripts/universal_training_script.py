@@ -77,6 +77,7 @@ if __name__ == "__main__":
         {
             "params": params_lb,
             "params_upper_bound": params_ub,
+            "no_render": args.no_render,
         }
     )
     with open(Path(log_dir) / "params_lb.txt", "w") as f:

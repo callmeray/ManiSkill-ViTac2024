@@ -68,10 +68,12 @@ class LongOpenLockSimEnv(gym.Env):
             params=None,
             params_upper_bound=None,
             device: str = "cuda:0",
+            no_render: bool = False,
             **kwargs
     ):
         super(LongOpenLockSimEnv, self).__init__()
 
+        self.no_render = no_render
         self.index = None
         self.step_penalty = step_penalty
         self.final_reward = final_reward
@@ -112,15 +114,17 @@ class LongOpenLockSimEnv(gym.Env):
 
         self.viewer = None
         self.scene = sapien.Scene()
-        self.scene.set_ambient_light([0.5, 0.5, 0.5])
-        self.scene.add_directional_light([0, -1, -1], [0.5, 0.5, 0.5], True)
+        if not no_render:
+            self.scene.set_ambient_light([0.5, 0.5, 0.5])
+            self.scene.add_directional_light([0, -1, -1], [0.5, 0.5, 0.5], True)
 
         # add a camera to indicate shader
-        cam_entity = sapien.Entity()
-        cam = sapien.render.RenderCameraComponent(512, 512)
-        cam_entity.add_component(cam)
-        cam_entity.name = "camera"
-        self.scene.add_entity(cam_entity)
+        if not no_render:
+            cam_entity = sapien.Entity()
+            cam = sapien.render.RenderCameraComponent(512, 512)
+            cam_entity.add_component(cam)
+            cam_entity.name = "camera"
+            self.scene.add_entity(cam_entity)
 
         ######## Create system ########
         ipc_system_config = IPCSystemConfig()
@@ -291,17 +295,19 @@ class LongOpenLockSimEnv(gym.Env):
         key_offset = [value / 1000 for value in key_offset]
 
         with suppress_stdout_stderr():
-            self.key_entity, key_abd, self.key_render = build_sapien_entity_ABD(key_path, "cuda:0", density=500.0,
+            self.key_entity, key_abd = build_sapien_entity_ABD(key_path, "cuda:0", density=500.0,
                                                                                 color=[1.0, 0.0, 0.0, 0.9],
-                                                                                friction=self.params.key_friction)
+                                                                                friction=self.params.key_friction,
+                                                               no_render=self.no_render)
         self.key_abd = key_abd
         self.key_entity.set_pose(sapien.Pose(p=key_offset, q=[0.7071068, 0, 0, 0]))
         self.scene.add_entity(self.key_entity)
 
         with suppress_stdout_stderr():
-            self.lock_entity, lock_abd, lock_render = build_sapien_entity_ABD(lock_path, "cuda:0", density=500.0,
+            self.lock_entity, lock_abd = build_sapien_entity_ABD(lock_path, "cuda:0", density=500.0,
                                                                               color=[0.0, 0.0, 1.0, 0.6],
-                                                                              friction=self.params.lock_friction)
+                                                                              friction=self.params.lock_friction,
+                                                                 no_render=self.no_render)
         self.hold_abd = lock_abd
         self.scene.add_entity(self.lock_entity)
 
@@ -416,6 +422,7 @@ class LongOpenLockSimEnv(gym.Env):
             density=self.params.tac_density_l,
             friction=self.params.tac_friction,
             name="tactile_sensor_1",
+            no_render=self.no_render,
         )
 
         self.tactile_sensor_2 = TactileSensorSapienIPC(
@@ -429,6 +436,7 @@ class LongOpenLockSimEnv(gym.Env):
             density=self.params.tac_density_r,
             friction=self.params.tac_friction,
             name="tactile_sensor_2",
+            no_render=self.no_render,
         )
 
     def step(self, action):
@@ -692,6 +700,7 @@ class LongOpenLockRandPointFlowEnv(LongOpenLockSimEnv):
             marker_lose_tracking_probability=self.marker_lose_tracking_probability,
             normalize=self.normalize,
             marker_flow_size=self.marker_flow_size,
+            no_render=self.no_render,
         )
 
         self.tactile_sensor_2 = VisionTactileSensorSapienIPC(
@@ -712,6 +721,7 @@ class LongOpenLockRandPointFlowEnv(LongOpenLockSimEnv):
             marker_lose_tracking_probability=self.marker_lose_tracking_probability,
             normalize=self.normalize,
             marker_flow_size=self.marker_flow_size,
+            no_render=self.no_render,
         )
 
     def get_obs(self, info=None):

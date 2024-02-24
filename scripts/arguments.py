@@ -50,6 +50,7 @@ def get_parser():
     parser.add_argument("--log_interval", type=int)
     parser.add_argument("--name", type=str)
     parser.add_argument("--seed", type=int)
+    parser.add_argument("--no_render", action="store_true", help="renderless mode")
     return parser
 
 

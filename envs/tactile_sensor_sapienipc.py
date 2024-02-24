@@ -45,6 +45,7 @@ class TactileSensorSapienIPC:
             friction: float = 0.5,
             torch_device: str = "cuda:0",
             name: str = "tactile_sensor",
+            no_render: bool = False
     ):
         self.ipc_system = ipc_system
         self.scene = scene
@@ -68,22 +69,23 @@ class TactileSensorSapienIPC:
         self.fem_component.set_material(density=density, young=elastic_modulus, poisson=poisson_ratio)
         self.fem_component.set_friction(friction)
 
-        # create render component
-        self.render_component = sapien.render.RenderCudaMeshComponent(
-            tet_mesh.n_vertices, tet_mesh.n_surface_triangles
-        )
-        self.render_component.set_vertex_count(tet_mesh.n_vertices)
-        self.render_component.set_triangles(tet_mesh.surface_triangles)
-        self.render_component.set_triangle_count(tet_mesh.n_surface_triangles)
+        if not no_render:
+            # create render component
+            self.render_component = sapien.render.RenderCudaMeshComponent(
+                tet_mesh.n_vertices, tet_mesh.n_surface_triangles
+            )
+            self.render_component.set_vertex_count(tet_mesh.n_vertices)
+            self.render_component.set_triangles(tet_mesh.surface_triangles)
+            self.render_component.set_triangle_count(tet_mesh.n_surface_triangles)
 
-        # Set material
-        mat = sapien.render.RenderMaterial(
-            base_color=[0.3, 1.0, 1.0, 1.0],  # light cyan
-            specular=0.8,
-            roughness=0.5,
-            metallic=0.1,
-        )
-        self.render_component.set_material(mat)
+            # Set material
+            mat = sapien.render.RenderMaterial(
+                base_color=[0.3, 1.0, 1.0, 1.0],  # light cyan
+                specular=0.8,
+                roughness=0.5,
+                metallic=0.1,
+            )
+            self.render_component.set_material(mat)
         # self.render_component.set_data_source(self.fem_component)
 
         # create sapien entity
@@ -239,6 +241,7 @@ class VisionTactileSensorSapienIPC(TactileSensorSapienIPC):
         self.init_vertices_camera = self.get_vertices_camera()
         self.init_surface_vertices_camera = self.get_surface_vertices_camera()
         self.reference_surface_vertices_camera = self.get_surface_vertices_camera()
+
 
         self.cam_entity = sapien.Entity()
         self.cam = cam = sapien.render.RenderCameraComponent(320, 240)
