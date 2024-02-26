@@ -113,10 +113,12 @@ class LongOpenLockSimEnv(gym.Env):
         self.init_right_surface_pts = None
 
         self.viewer = None
-        self.scene = sapien.Scene()
         if not no_render:
+            self.scene = sapien.Scene()
             self.scene.set_ambient_light([0.5, 0.5, 0.5])
             self.scene.add_directional_light([0, -1, -1], [0.5, 0.5, 0.5], True)
+        else:
+            self.scene = sapien.Scene(systems=[])
 
         # add a camera to indicate shader
         if not no_render:
