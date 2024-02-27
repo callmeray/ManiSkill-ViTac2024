@@ -22,7 +22,7 @@ repo_path = os.path.join(script_path, "..")
 sys.path.append(script_path)
 sys.path.insert(0, repo_path)
 
-EVAL_CFG_FILE = os.path.join(repo_path, "pretrain_weight/pretrain_peg_insertion/cfg.yaml")
+EVAL_CFG_FILE = os.path.join(repo_path, "configs/evaluation/peg_insertion_evaluation.yaml")
 PEG_NUM = 3
 REPEAT_NUM = 2
 

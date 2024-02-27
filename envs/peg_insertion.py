@@ -463,7 +463,7 @@ class ContinuousInsertionSimEnv(gym.Env):
             no_render=self.no_render,
         )
 
-    def reset(self, offset=None, seed=None, i: int = None):
+    def reset(self, offset=None, seed=None, peg_idx: int = None):
 
         if self.viewer:
             self.viewer.close()
@@ -476,7 +476,7 @@ class ContinuousInsertionSimEnv(gym.Env):
         if offset:
             offset = np.array(offset).astype(float)
 
-        offset = self.__initialize__(offset, i)
+        offset = self.__initialize__(offset, peg_idx)
 
         self.init_offset_of_current_eposide = offset
         self.current_offset_of_current_episode = offset
