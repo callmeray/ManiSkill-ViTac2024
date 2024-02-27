@@ -208,7 +208,7 @@ class ContinuousInsertionSimEnv(gym.Env):
         }
         return obs
 
-    def __initialize__(self, offset: Union[np.ndarray, None]):
+    def __initialize__(self, offset: Union[np.ndarray, None], i=None):
         """
         offset: (x_offset in mm, y_offset in mm, theta_offset in degree)
         """
@@ -218,11 +218,22 @@ class ContinuousInsertionSimEnv(gym.Env):
                 e.remove_from_scene()
         self.ipc_system.rebuild()
 
-        # randomly choose peg and hole
-        peg_path, hole_path = self.peg_hole_path_list[np.random.randint(len(self.peg_hole_path_list))]
+        # If in the process of evaluation, select sequentially; if in the process of training, select randomly.
+        if i is None:
+            peg_path, hole_path = self.peg_hole_path_list[np.random.randint(len(self.peg_hole_path_list))]
+        else:
+            if i == 0:
+                peg_path, hole_path = self.peg_hole_path_list[0]
+            elif i == 1:
+                peg_path, hole_path = self.peg_hole_path_list[1]
+            elif i == 2:
+                peg_path, hole_path = self.peg_hole_path_list[2]
+
         asset_dir = Path(repo_path) / "assets"
         peg_path = asset_dir / peg_path
         hole_path = asset_dir / hole_path
+
+        print(peg_path)
 
         # add peg
         with suppress_stdout_stderr():
@@ -455,7 +466,7 @@ class ContinuousInsertionSimEnv(gym.Env):
             no_render=self.no_render,
         )
 
-    def reset(self, offset=None, seed=None):
+    def reset(self, offset=None, seed=None, i: int=None):
 
         if self.viewer:
             self.viewer.close()
@@ -468,7 +479,7 @@ class ContinuousInsertionSimEnv(gym.Env):
         if offset:
             offset = np.array(offset).astype(float)
 
-        offset = self.__initialize__(offset)
+        offset = self.__initialize__(offset, i)
 
         self.init_offset_of_current_eposide = offset
         self.current_offset_of_current_episode = offset
