@@ -211,7 +211,7 @@ class ContinuousInsertionSimEnv(gym.Env):
         }
         return obs
 
-    def __initialize__(self, offset: Union[np.ndarray, None], i=None):
+    def __initialize__(self, offset: Union[np.ndarray, None], peg_idx=None | int):
         """
         offset: (x_offset in mm, y_offset in mm, theta_offset in degree)
         """
@@ -222,15 +222,11 @@ class ContinuousInsertionSimEnv(gym.Env):
         self.ipc_system.rebuild()
 
         # If in the process of evaluation, select sequentially; if in the process of training, select randomly.
-        if i is None:
+        if peg_idx is None:
             peg_path, hole_path = self.peg_hole_path_list[np.random.randint(len(self.peg_hole_path_list))]
         else:
-            if i == 0:
-                peg_path, hole_path = self.peg_hole_path_list[0]
-            elif i == 1:
-                peg_path, hole_path = self.peg_hole_path_list[1]
-            elif i == 2:
-                peg_path, hole_path = self.peg_hole_path_list[2]
+            assert peg_idx < len(self.peg_hole_path_list)
+            peg_path, hole_path = self.peg_hole_path_list[peg_idx]
 
         asset_dir = Path(repo_path) / "assets"
         peg_path = asset_dir / peg_path
