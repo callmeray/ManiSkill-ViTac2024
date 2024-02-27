@@ -104,7 +104,7 @@ def evaluate_policy(model, key, render_rgb):
                 logger.opt(colors=True).info(f"<d>RESULT: FAIL</d>")
 
     env.close()
-    success_rate = np.sum(np.array([int(v[0]) for v in test_result])) / test_num * 0.3
+    success_rate = np.sum(np.array([int(v[0]) for v in test_result])) / (test_num * 3)
     if success_rate > 0:
         avg_steps = np.mean(np.array([int(v[1]) if v[0] else 0 for v in test_result])) / success_rate
         logger.info(f"#SUCCESS_RATE: {success_rate:.4f}")
