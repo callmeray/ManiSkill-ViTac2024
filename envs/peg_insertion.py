@@ -211,7 +211,7 @@ class ContinuousInsertionSimEnv(gym.Env):
         }
         return obs
 
-    def __initialize__(self, offset: Union[np.ndarray, None], peg_idx=Union[int, None]):
+    def __initialize__(self, offset: Union[np.ndarray, None], peg_idx: Union[int, None] = None):
         """
         offset: (x_offset in mm, y_offset in mm, theta_offset in degree)
         """
