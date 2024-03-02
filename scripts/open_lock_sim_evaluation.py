@@ -5,11 +5,14 @@ import time
 import numpy as np
 import ruamel.yaml as yaml
 import torch
+from stable_baselines3.common.save_util import load_from_zip_file
 
 from scripts.arguments import parse_params
 from envs.long_open_lock import LongOpenLockRandPointFlowEnv
 from path import Path
 from stable_baselines3.common.utils import set_random_seed
+
+from solutions.policies import TD3PolicyForLongOpenLockPointFlowEnv
 from utils.common import get_time, get_average_params
 from loguru import logger
 
@@ -24,7 +27,8 @@ sys.path.append(script_path)
 sys.path.insert(0, repo_path)
 
 EVAL_CFG_FILE = os.path.join(repo_path, "configs/evaluation/open_lock_evaluation.yaml")
-REPEAT_NUM = 5
+KEY_NUM = 4
+REPEAT_NUM = 2
 
 
 def evaluate_policy(model, key, render_rgb):
@@ -69,39 +73,41 @@ def evaluate_policy(model, key, render_rgb):
     set_random_seed(0)
 
     offset_list = [[i * 1.0 / 3, 0, 0] for i in range(30)]
-    offset_list = offset_list * REPEAT_NUM
     test_num = len(offset_list)
     test_result = []
-    for k in range(test_num):
-        logger.opt(colors=True).info(f"<blue>#### Test No. {k + 1} ####</blue>")
-        o, _ = env.reset(offset_list[k])
-        d, ep_ret, ep_len = False, 0, 0
-        while not d:
-            # Take deterministic actions at test time (noise_scale=0)
-            ep_len += 1
-            for obs_k, obs_v in o.items():
-                o[obs_k] = torch.from_numpy(obs_v)
-            action = model(o)
-            action = action.cpu().detach().numpy().flatten()
-            logger.info(f"Step {ep_len} Action: {action}")
-            o, r, terminated, truncated, info = env.step(action)
-            d = terminated or truncated
-            ep_ret += r
-        if info["is_success"]:
-            test_result.append([True, ep_len])
-            logger.opt(colors=True).info(f"<green>RESULT: SUCCESS</green>")
-        else:
-            test_result.append([False, ep_len])
-            logger.opt(colors=True).info(f"<d>RESULT: FAIL</d>")
+
+    for i in range(KEY_NUM):
+        for r in range(REPEAT_NUM):
+            for k in range(test_num):
+                logger.opt(colors=True).info(f"<blue>#### Test No. {len(test_result) + 1} ####</blue>")
+                o, _ = env.reset(offset_list[k], key_idx=i)
+                d, ep_ret, ep_len = False, 0, 0
+                while not d:
+                    # Take deterministic actions at test time (noise_scale=0)
+                    ep_len += 1
+                    for obs_k, obs_v in o.items():
+                        o[obs_k] = torch.from_numpy(obs_v)
+                    action = model(o)
+                    action = action.cpu().detach().numpy().flatten()
+                    logger.info(f"Step {ep_len} Action: {action}")
+                    o, r, terminated, truncated, info = env.step(action)
+                    d = terminated or truncated
+                    ep_ret += r
+                if info["is_success"]:
+                    test_result.append([True, ep_len])
+                    logger.opt(colors=True).info(f"<green>RESULT: SUCCESS</green>")
+                else:
+                    test_result.append([False, ep_len])
+                    logger.opt(colors=True).info(f"<d>RESULT: FAIL</d>")
 
     env.close()
-    success_rate = np.sum(np.array([int(v[0]) for v in test_result])) / test_num
+    success_rate = np.sum(np.array([int(v[0]) for v in test_result])) / (test_num * KEY_NUM * REPEAT_NUM)
     if success_rate > 0:
         avg_steps = np.mean(np.array([int(v[1]) if v[0] else 0 for v in test_result])) / success_rate
-        logger.info(f"#SUCCESS_RATE: {success_rate:.4f}")
+        logger.info(f"#SUCCESS_RATE: {success_rate*100.0:.2f}%")
         logger.info(f"#AVG_STEP: {avg_steps:.2f}")
     else:
-        logger.info(f"#SUCCESS_RATE: {success_rate:.4f}")
+        logger.info(f"#SUCCESS_RATE: 0")
         logger.info(f"#AVG_STEP: NA")
 
 
@@ -110,19 +116,16 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--key", type=str, required=True, help="use the key sent to you")
-    parser.add_argument("--render_rgb", type=bool, required=True,
-                        help="whether to simulate rgb images of tactile sensors")
+    parser.add_argument("--render_rgb",action="store_true")
     args = parser.parse_args()
     key = args.key
     # replace the model with your own policy
-    import torch.nn as nn
 
-
-    class ZeroAction(nn.Module):
-        def forward(self, obs):
-            return torch.zeros(3, dtype=torch.float32)
-
-
-    model = ZeroAction()
-
+    policy_file = "../pretrain_weight/pretrain_openlock/best_model.zip"
+    data, params, _ = load_from_zip_file(policy_file)
+    model = TD3PolicyForLongOpenLockPointFlowEnv(observation_space=data["observation_space"],
+                                    action_space=data["action_space"],
+                                    lr_schedule=data["lr_schedule"],
+                                    **data["policy_kwargs"],)
+    model.load_state_dict(params["policy"])
     evaluate_policy(model, key, args.render_rgb)

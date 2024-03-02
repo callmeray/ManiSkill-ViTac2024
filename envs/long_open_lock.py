@@ -174,7 +174,7 @@ class LongOpenLockSimEnv(gym.Env):
 
         # build scene, system
 
-    def reset(self, offset=None, seed=None):
+    def reset(self, offset=None, seed=None, key_idx: int = None):
 
         if self.viewer:
             self.viewer.close()
@@ -183,7 +183,7 @@ class LongOpenLockSimEnv(gym.Env):
         self.current_episode_elapsed_steps = 0
         self.current_episode_over = False
 
-        self.initialize(key_offset=offset)
+        self.initialize(key_offset=offset, key_idx = key_idx)
         self.init_left_surface_pts = self.no_contact_surface_mesh[0]
         self.init_right_surface_pts = self.no_contact_surface_mesh[1]
         self.error_evaluation_list = []
@@ -251,15 +251,20 @@ class LongOpenLockSimEnv(gym.Env):
             seed = (int(time.time() * 1000) % 10000 * os.getpid()) % 2 ** 30
         np.random.seed(seed)
 
-    def initialize(self, key_offset=None):
+    def initialize(self, key_offset=None, key_idx: int = None):
 
         for e in self.scene.entities:
             if "camera" not in e.name:
                 e.remove_from_scene()
         self.ipc_system.rebuild()
 
-        self.index = np.random.randint(len(self.key_lock_path_list))
-        key_path, lock_path = self.key_lock_path_list[self.index]
+        if key_idx is None:
+            self.index = np.random.randint(len(self.key_lock_path_list))
+            key_path, lock_path = self.key_lock_path_list[np.random.randint(len(self.key_lock_path_list))]
+        else:
+            assert key_idx < len(self.key_lock_path_list)
+            key_path, lock_path = self.key_lock_path_list[key_idx]
+
         asset_dir = Path(repo_path) / "assets"
         key_path = asset_dir / key_path
         lock_path = asset_dir / lock_path
