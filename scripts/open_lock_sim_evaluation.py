@@ -121,7 +121,7 @@ if __name__ == "__main__":
     key = args.key
     # replace the model with your own policy
 
-    policy_file = "../pretrain_weight/pretrain_openlock/best_model.zip"
+    policy_file = "/home/cy/Downloads/best_model.zip"
     data, params, _ = load_from_zip_file(policy_file)
     model = TD3PolicyForLongOpenLockPointFlowEnv(observation_space=data["observation_space"],
                                     action_space=data["action_space"],
