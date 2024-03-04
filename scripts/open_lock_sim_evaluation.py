@@ -116,7 +116,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--key", type=str, required=True, help="use the key sent to you")
-    parser.add_argument("--render_rgb",action="store_true")
+    parser.add_argument("--render_rgb", action="store_true")
     args = parser.parse_args()
     key = args.key
     # replace the model with your own policy
