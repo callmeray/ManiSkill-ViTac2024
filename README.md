@@ -13,6 +13,8 @@
 - [Citation](#citation)
 
 ## Update
+**2024/03/05** Add the baseline for long_open_lock,  you can run [open_lock_sim_evaluation.py](scripts%2Fopen_lock_sim_evaluation.py) to check it.
+
 **2024/02/27** Add the baseline for peg_insertion,  you can run [peg_insertion_sim_evaluation.py](scripts%2Fpeg_insertion_sim_evaluation.py) to check it.
 
 **2024/02/24** Add `--no_render` option for training without renderer. This is useful for training on a server without a display.
