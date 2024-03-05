@@ -125,13 +125,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     key = args.key
     # replace the model with your own policy
-    import torch.nn as nn
-
-    class ZeroAction(nn.Module):
-        def forward(self, obs):
-            return torch.zeros(3, dtype=torch.float32)
-
-    # model = ZeroAction()
 
     policy_file = "../pretrain_weight/pretrain_peg_insertion/best_model.zip"
     data, params, _ = load_from_zip_file(policy_file)

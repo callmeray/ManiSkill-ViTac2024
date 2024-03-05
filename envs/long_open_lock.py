@@ -201,47 +201,47 @@ class LongOpenLockSimEnv(gym.Env):
         lock1_pts_center = info["lock1_pts"].mean(0) * 1000
         lock2_pts_center = info["lock2_pts"].mean(0) * 1000
 
-        error_sum += np.abs(key1_pts_center[0] - lock1_pts_center[0])  # x direction
-        error_sum += np.abs(key2_pts_center[0] - lock2_pts_center[0])
+        error_sum += (key1_pts_center[0] - lock1_pts_center[0]) ** 2  # x direction
+        error_sum += (key2_pts_center[0] - lock2_pts_center[0]) ** 2
         # print(f"reward start: {reward}")
         # z_offset
         if self.index == 0 or self.index == 2:
             if key1_pts_max[0] < 46 and key2_pts_max[0] < 46:
                 # if key is inside the lock, then encourage it to fit in to the holes
-                error_sum += np.abs(37 - key1_pts_center[2])  # must be constrained in both directions
-                error_sum += np.abs(37 - key2_pts_center[2])  # otherwise the policy would keep lifting the key
+                error_sum += (37 - key1_pts_center[2]) ** 2  # must be constrained in both directions
+                error_sum += (37 - key2_pts_center[2]) ** 2  # otherwise the policy would keep lifting the key
                 # and smooth the error to avoid sudden change
             else:
                 # else, align it with the hole
-                error_sum += np.abs(key1_pts_center[2] - 30) + 7
-                error_sum += np.abs(key2_pts_center[2] - 30) + 7
+                error_sum += (key1_pts_center[2] - 30) ** 2 + 64
+                error_sum += (key2_pts_center[2] - 30) ** 2 + 64
                 pass
         if self.index == 1:
             if key1_pts_max[0] < 52 and key2_pts_max[0] < 52:
                 # if key is inside the lock, then encourage it to fit in to the holes
-                error_sum += np.abs(37 - key1_pts_center[2])  # must be constrained in both directions
-                error_sum += np.abs(37 - key2_pts_center[2])  # otherwise the policy would keep lifting the key
+                error_sum += (37 - key1_pts_center[2]) ** 2  # must be constrained in both directions
+                error_sum += (37 - key2_pts_center[2]) ** 2  # otherwise the policy would keep lifting the key
                 # and smooth the error to avoid sudden change
             else:
                 # else, align it with the hole
-                error_sum += np.abs(key1_pts_center[2] - 30) + 7
-                error_sum += np.abs(key2_pts_center[2] - 30) + 7
+                error_sum += (key1_pts_center[2] - 30) ** 2 + 64
+                error_sum += (key2_pts_center[2] - 30) ** 2 + 64
                 pass
         if self.index == 3:
             if key1_pts_max[0] < 62 and key2_pts_max[0] < 62:
                 # if key is inside the lock, then encourage it to fit in to the holes
-                error_sum += np.abs(37 - key1_pts_center[2])  # must be constrained in both directions
-                error_sum += np.abs(37 - key2_pts_center[2])  # otherwise the policy would keep lifting the key
+                error_sum += (37 - key1_pts_center[2]) ** 2  # must be constrained in both directions
+                error_sum += (37 - key2_pts_center[2]) ** 2  # otherwise the policy would keep lifting the key
                 # and smooth the error to avoid sudden change
             else:
                 # else, align it with the hole
-                error_sum += np.abs(key1_pts_center[2] - 30) + 7
-                error_sum += np.abs(key2_pts_center[2] - 30) + 7
+                error_sum += (key1_pts_center[2] - 30) ** 2 + 64
+                error_sum += (key2_pts_center[2] - 30) ** 2 + 64
                 pass
 
         # y_offset
-        error_sum += np.abs(key1_pts_center[1])
-        error_sum += np.abs(key2_pts_center[1])
+        error_sum += (key1_pts_center[1]) ** 2
+        error_sum += (key2_pts_center[1]) ** 2
         # error_sum = np.sqrt(error_sum)
         error_sum *= error_scale
         return error_sum

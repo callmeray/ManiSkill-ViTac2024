@@ -464,7 +464,7 @@ class ContinuousInsertionSimEnv(gym.Env):
         )
 
     def reset(self, offset=None, seed=None, peg_idx: int = None):
-
+        print(peg_idx)
         if self.viewer:
             self.viewer.close()
             self.viewer = None
@@ -952,7 +952,7 @@ if __name__ == "__main__":
         plt.close()
 
 
-    offset_list = [[4, 0, 0], [-4, 0, 0], [0, 4, 0], [0, -4, 0]]
+    offset_list = [[0, 0, 0]]
     for offset in offset_list:
         o, _ = env.reset(offset)
         for k, v in o.items():

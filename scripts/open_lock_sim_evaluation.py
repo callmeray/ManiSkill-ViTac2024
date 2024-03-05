@@ -116,12 +116,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--key", type=str, required=True, help="use the key sent to you")
-    parser.add_argument("--render_rgb",action="store_true")
+    parser.add_argument("--render_rgb", action="store_true")
     args = parser.parse_args()
     key = args.key
     # replace the model with your own policy
 
-    policy_file = "/home/cy/Downloads/best_model.zip"
+    policy_file = "../pretrain_weight/pretrain_openlock/best_model.zip"
     data, params, _ = load_from_zip_file(policy_file)
     model = TD3PolicyForLongOpenLockPointFlowEnv(observation_space=data["observation_space"],
                                     action_space=data["action_space"],
