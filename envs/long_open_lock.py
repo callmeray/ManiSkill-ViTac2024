@@ -92,7 +92,6 @@ class LongOpenLockSimEnv(gym.Env):
         self.sensor_grasp_center_init = np.array([0, 0, 0])
         self.sensor_grasp_center_current = self.sensor_grasp_center_init
 
-
         if not params:
             self.params_lb = LongOpenLockParams()
         else:
@@ -304,8 +303,8 @@ class LongOpenLockSimEnv(gym.Env):
 
         with suppress_stdout_stderr():
             self.key_entity, key_abd = build_sapien_entity_ABD(key_path, "cuda:0", density=500.0,
-                                                                                color=[1.0, 0.0, 0.0, 0.9],
-                                                                                friction=self.params.key_friction,
+                                                               color=[1.0, 0.0, 0.0, 0.9],
+                                                               friction=self.params.key_friction,
                                                                no_render=self.no_render)
         self.key_abd = key_abd
         self.key_entity.set_pose(sapien.Pose(p=key_offset, q=[0.7071068, 0, 0, 0]))
@@ -313,8 +312,8 @@ class LongOpenLockSimEnv(gym.Env):
 
         with suppress_stdout_stderr():
             self.lock_entity, lock_abd = build_sapien_entity_ABD(lock_path, "cuda:0", density=500.0,
-                                                                              color=[0.0, 0.0, 1.0, 0.6],
-                                                                              friction=self.params.lock_friction,
+                                                                 color=[0.0, 0.0, 1.0, 0.6],
+                                                                 friction=self.params.lock_friction,
                                                                  no_render=self.no_render)
         self.hold_abd = lock_abd
         self.scene.add_entity(self.lock_entity)
@@ -493,18 +492,12 @@ class LongOpenLockSimEnv(gym.Env):
         key_pts = self.key_abd.get_positions().cpu().numpy().copy()
         lock_pts = self.hold_abd.get_positions().cpu().numpy().copy()
         if self.index == 0:
-            key1_idx = np.array([16, 17, 18, 19]) # large
+            key1_idx = np.array([16, 17, 18, 19])  # large
             key2_idx = np.array([24, 25, 26, 27])
             key_side_index = np.array([1, 3, 30, 31])
             lock1_idx = np.array([2, 3, 6, 7])
             lock2_idx = np.array([4, 5, 30, 31])
             lock_side_index = np.array([10, 11, 9, 13])
-            self.key1_pts = key_pts[key1_idx]
-            self.key2_pts = key_pts[key2_idx]
-            self.key_side_pts = key_pts[key_side_index]
-            self.lock1_pts = lock_pts[lock1_idx]
-            self.lock2_pts = lock_pts[lock2_idx]
-            self.lock_side_pts = lock_pts[lock_side_index]
         elif self.index == 1:
             key1_idx = np.array([20, 21, 22, 23])
             key2_idx = np.array([28, 29, 30, 31])
@@ -512,12 +505,6 @@ class LongOpenLockSimEnv(gym.Env):
             lock1_idx = np.array([0, 1, 6, 7])
             lock2_idx = np.array([30, 31, 2, 3])
             lock_side_index = np.array([8, 9, 11, 13])
-            self.key1_pts = key_pts[key1_idx]
-            self.key2_pts = key_pts[key2_idx]
-            self.key_side_pts = key_pts[key_side_index]
-            self.lock1_pts = lock_pts[lock1_idx]
-            self.lock2_pts = lock_pts[lock2_idx]
-            self.lock_side_pts = lock_pts[lock_side_index]
         elif self.index == 2:
             key1_idx = np.array([4, 5, 6, 7])
             key2_idx = np.array([12, 13, 14, 15])
@@ -525,12 +512,6 @@ class LongOpenLockSimEnv(gym.Env):
             lock1_idx = np.array([6, 7, 2, 3])
             lock2_idx = np.array([4, 5, 30, 31])
             lock_side_index = np.array([10, 9, 11, 13])
-            self.key1_pts = key_pts[key1_idx]
-            self.key2_pts = key_pts[key2_idx]
-            self.key_side_pts = key_pts[key_side_index]
-            self.lock1_pts = lock_pts[lock1_idx]
-            self.lock2_pts = lock_pts[lock2_idx]
-            self.lock_side_pts = lock_pts[lock_side_index]
         elif self.index == 3:
             key1_idx = np.array([8, 9, 10, 11])
             key2_idx = np.array([16, 17, 18, 19])
@@ -538,19 +519,14 @@ class LongOpenLockSimEnv(gym.Env):
             lock1_idx = np.array([2, 3, 10, 11])
             lock2_idx = np.array([6, 7, 8, 9])
             lock_side_index = np.array([12, 13, 15, 17])
-            self.key1_pts = key_pts[key1_idx]
-            self.key2_pts = key_pts[key2_idx]
-            self.key_side_pts = key_pts[key_side_index]
-            self.lock1_pts = lock_pts[lock1_idx]
-            self.lock2_pts = lock_pts[lock2_idx]
-            self.lock_side_pts = lock_pts[lock_side_index]
 
-        key1_pts = self.key1_pts
-        key2_pts = self.key2_pts
-        key_side_pts = self.key_side_pts
-        lock1_pts = self.lock1_pts
-        lock2_pts = self.lock2_pts
-        lock_side_pts = self.lock_side_pts
+        self.key1_pts = key1_pts = key_pts[key1_idx]
+        self.key2_pts = key2_pts = key_pts[key2_idx]
+        self.key_side_pts = key_side_pts = key_pts[key_side_index]
+        self.lock1_pts = lock1_pts = lock_pts[lock1_idx]
+        self.lock2_pts = lock2_pts = lock_pts[lock2_idx]
+        self.lock_side_pts = lock_side_pts = lock_pts[lock_side_index]
+
         info["key1_pts"] = key1_pts
         info["key2_pts"] = key2_pts
         info["key_side_pts"] = key_side_pts
@@ -746,10 +722,12 @@ class LongOpenLockRandPointFlowEnv(LongOpenLockSimEnv):
         key1_pts = obs.pop("key1_pts")
         key2_pts = obs.pop("key2_pts")
         # key_end_pts = obs.pop("key_end_pts")
-        obs["key1"] = np.array([key1_pts.mean(0)[0] - info["lock1_pts"].mean(0)[0], key1_pts.mean(0)[1], key1_pts.mean(0)[2] - 0.03],
-                               dtype=np.float32) * 200.0
-        obs["key2"] = np.array([key2_pts.mean(0)[0] - info["lock2_pts"].mean(0)[0], key2_pts.mean(0)[1], key2_pts.mean(0)[2] - 0.03],
-                               dtype=np.float32) * 200.0
+        obs["key1"] = np.array(
+            [key1_pts.mean(0)[0] - info["lock1_pts"].mean(0)[0], key1_pts.mean(0)[1], key1_pts.mean(0)[2] - 0.03],
+            dtype=np.float32) * 200.0
+        obs["key2"] = np.array(
+            [key2_pts.mean(0)[0] - info["lock2_pts"].mean(0)[0], key2_pts.mean(0)[1], key2_pts.mean(0)[2] - 0.03],
+            dtype=np.float32) * 200.0
 
         if self.render_rgb:
             obs["rgb_images"] = np.stack(
