@@ -24,7 +24,7 @@ sys.path.insert(0, repo_path)
 
 EVAL_CFG_FILE = os.path.join(repo_path, "configs/evaluation/peg_insertion_evaluation.yaml")
 PEG_NUM = 3
-REPEAT_NUM = 5
+REPEAT_NUM = 2
 
 
 def evaluate_policy(model, key, render_rgb):

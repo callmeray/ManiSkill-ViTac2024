@@ -15,7 +15,7 @@ def build_sapien_entity_ABD_Tri(msh_path: str,
                                 friction: float = 0.5,
                                 color: List[float] = [0.7, 0.7, 0.7, 1.0],
                                 no_render: bool = False) -> Tuple[
-    sapien.Entity, IPCABDComponent, sapien.render.RenderCudaMeshComponent]:
+    sapien.Entity, IPCABDComponent]:
     abd_component = IPCABDComponent()
     abd_component.set_tri_mesh(IPCTriMesh(filename=msh_path, scale=0.001))
     abd_component.set_density(density)
@@ -50,7 +50,7 @@ def build_sapien_entity_ABD_Tet(msh_path: str,
                                 friction: float = 0.5,
                                 color: List[float] = [0.7, 0.7, 0.7, 1.0],
                                 no_render: bool = False) -> Tuple[
-    sapien.Entity, IPCABDComponent, sapien.render.RenderCudaMeshComponent]:
+    sapien.Entity, IPCABDComponent]:
     abd_component = IPCABDComponent()
     abd_component.set_tet_mesh(IPCTetMesh(filename=msh_path))
     abd_component.set_density(density)
@@ -85,7 +85,7 @@ def build_sapien_entity_ABD(msh_path: str,
                             friction: float = 0.5,
                             color: List[float] = [0.7, 0.7, 0.7, 1.0],
                             no_render: bool = False) -> Tuple[
-    sapien.Entity, IPCABDComponent, sapien.render.RenderCudaMeshComponent]:
+    sapien.Entity, IPCABDComponent]:
     ext = os.path.splitext(msh_path)[-1]
     if ext == ".msh":
         return build_sapien_entity_ABD_Tet(msh_path, torch_device, density, friction, color, no_render)
