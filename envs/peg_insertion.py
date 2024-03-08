@@ -463,7 +463,7 @@ class ContinuousInsertionSimEnv(gym.Env):
             no_render=self.no_render,
         )
 
-    def reset(self, offset=None, seed=None, i: int = None):
+    def reset(self, offset=None, seed=None, peg_idx: int = None):
 
         if self.viewer:
             self.viewer.close()
