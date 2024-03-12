@@ -87,4 +87,4 @@ train:
   seed: 0
   device: "cuda"
   gpu: 0
-  name: "7shape_1.5mm"
+  name: "3shape_1.5mm"
