@@ -5,7 +5,7 @@ env:
   max_action: [2.0, 2.0, 4.0]
   max_steps: 8
   z_step_size: 0.125
-  peg_hole_path_file: "configs/peg_insertion/3shape_1.0mm.txt"
+  peg_hole_path_file: "configs/peg_insertion/3shape_1.5mm.txt"
   peg_x_max_offset: 5.0
   peg_y_max_offset: 5.0
   peg_theta_max_offset: 10.0

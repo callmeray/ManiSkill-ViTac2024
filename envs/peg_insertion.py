@@ -231,9 +231,10 @@ class ContinuousInsertionSimEnv(gym.Env):
         asset_dir = Path(repo_path) / "assets"
         peg_path = asset_dir / peg_path
         hole_path = asset_dir / hole_path
-
+        print("this is:", peg_path)
         # add peg
         with suppress_stdout_stderr():
+
             self.peg_entity, peg_abd = build_sapien_entity_ABD(peg_path, "cuda:0", density=500.0,
                                                                color=[1.0, 0.0, 0.0, 0.9],
                                                                friction=self.params.peg_friction,
