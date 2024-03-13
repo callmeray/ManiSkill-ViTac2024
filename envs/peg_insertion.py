@@ -779,8 +779,8 @@ class ContinuousInsertionSimGymRandomizedPointFLowEnv(ContinuousInsertionSimEnv)
         if render_rgb:
             self.default_observation["rgb_images"] = np.stack(
                 [
-                    np.zeros((320, 240, 3), dtype=np.uint8),
-                    np.zeros((320, 240, 3), dtype=np.uint8),
+                    np.zeros((240, 320, 3), dtype=np.uint8),
+                    np.zeros((240, 320, 3), dtype=np.uint8),
                 ],
                 axis=0
             )
