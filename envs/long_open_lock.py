@@ -259,7 +259,7 @@ class LongOpenLockSimEnv(gym.Env):
         print(key_idx)
         if key_idx is None:
             self.index = np.random.randint(len(self.key_lock_path_list))
-            key_path, lock_path = self.key_lock_path_list[np.random.randint(len(self.key_lock_path_list))]
+            key_path, lock_path = self.key_lock_path_list[self.index]
         else:
             assert key_idx < len(self.key_lock_path_list)
             self.index = key_idx
