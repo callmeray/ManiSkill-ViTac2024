@@ -55,7 +55,7 @@ env:
 
 policy:
   policy_name: TD3PolicyForPointFlowEnv
-  buffer_size: 200000
+  buffer_size: 2000
   train_freq: 2
   gradient_steps: -1
   learning_starts: 2000

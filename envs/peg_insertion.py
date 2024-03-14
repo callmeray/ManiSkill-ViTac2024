@@ -740,7 +740,7 @@ class ContinuousInsertionSimEnv(gym.Env):
 class ContinuousInsertionSimGymRandomizedPointFLowEnv(ContinuousInsertionSimEnv):
     def __init__(
             self,
-            render_rgb: bool = False,
+            render_rgb: bool = True,
             marker_interval_range: Tuple[float, float] = (2., 2.),
             marker_rotation_range: float = 0.,
             marker_translation_range: Tuple[float, float] = (0., 0.),
