@@ -117,7 +117,7 @@ class LongOpenLockSimEnv(gym.Env):
             self.scene.set_ambient_light([0.5, 0.5, 0.5])
             self.scene.add_directional_light([0, -1, -1], [0.5, 0.5, 0.5], True)
         else:
-            self.scene = sapien.Scene(systems=[])
+            self.scene = sapien.Scene()
 
         # add a camera to indicate shader
         if not no_render:
@@ -256,7 +256,6 @@ class LongOpenLockSimEnv(gym.Env):
             if "camera" not in e.name:
                 e.remove_from_scene()
         self.ipc_system.rebuild()
-        print(key_idx)
         if key_idx is None:
             self.index = np.random.randint(len(self.key_lock_path_list))
             key_path, lock_path = self.key_lock_path_list[self.index]

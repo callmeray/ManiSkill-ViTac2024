@@ -139,7 +139,7 @@ class ContinuousInsertionSimEnv(gym.Env):
             self.scene.set_ambient_light([0.5, 0.5, 0.5])
             self.scene.add_directional_light([0, -1, -1], [0.5, 0.5, 0.5], True)
         else:
-            self.scene = sapien.Scene(systems=[])
+            self.scene = sapien.Scene()
 
         # add a camera to indicate shader
         if not no_render:
