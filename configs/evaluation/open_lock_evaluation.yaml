@@ -24,11 +24,11 @@ env:
     # common parameters
     sim_time_step: 0.033
     tac_sensor_meta_file: "gelsight_mini_e430/meta_file"
-    tac_elastic_modulus_l: [ 3.0e5, 1.0e6 ]  # note if 3e5 is correctly recognized as float
-    tac_poisson_ratio_l: [ 0.3, 0.47 ]
-    tac_elastic_modulus_r: [ 3.0e5, 1.0e6 ]
-    tac_poisson_ratio_r: [ 0.3, 0.47 ]
-    tac_friction: [ 0.5, 2.0 ]
+    tac_elastic_modulus_l: [ 3.0e5, 3.0e5 ]  # note if 3e5 is correctly recognized as float
+    tac_poisson_ratio_l: [ 0.3, 0.3 ]
+    tac_elastic_modulus_r: [ 3.0e5, 3.0e5 ]
+    tac_poisson_ratio_r: [ 0.3, 0.3 ]
+    tac_friction: [ 50.0, 125.0 ]
     # task specific parameters
     key_lock_path_file: "configs/key_and_lock/key_lock.txt"
     indentation_depth: [ 0.5, 1.25 ]
